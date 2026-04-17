@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Score Predictor</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+        }
+
+        .container {
+            width: 50%;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            margin-top: 40px;
+            border-radius: 15px;
+            box-shadow: 0px 0px 20px rgba(0,0,0,0.2);
+        }
+
+        select, input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #4facfe;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #00c6ff;
+        }
+
+        .loader {
+            display: none;
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #4facfe;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            margin: auto;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+
+    <script>
+        function showLoader() {
+            document.getElementById("loader").style.display = "block";
+        }
+    </script>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2>🎓 Student Score Predictor</h2>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+          <p class="error">{{ message }}</p>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form action="/predict" method="post" onsubmit="showLoader()">
+
+        <select name="gender">
+            <option value="">Gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+        </select>
+
+        <select name="race_ethnicity">
+            <option value="">Race</option>
+            <option value="group A">Group A</option>
+            <option value="group B">Group B</option>
+            <option value="group C">Group C</option>
+            <option value="group D">Group D</option>
+            <option value="group E">Group E</option>
+        </select>
+
+        <select name="parental_level_of_education">
+            <option value="">Education</option>
+            <option value="high school">High School</option>
+            <option value="associate's degree">Associate's</option>
+            <option value="bachelor's degree">Bachelor's</option>
+            <option value="master's degree">Master's</option>
+        </select>
+
+        <select name="lunch">
+            <option value="">Lunch</option>
+            <option value="standard">Standard</option>
+            <option value="free/reduced">Free/Reduced</option>
+        </select>
+
+        <select name="test_preparation_course">
+            <option value="">Test Course</option>
+            <option value="none">None</option>
+            <option value="completed">Completed</option>
+        </select>
+
+        <input type="number" name="reading_score" placeholder="Reading Score">
+        <input type="number" name="writing_score" placeholder="Writing Score">
+
+        <button type="submit">🚀 Predict</button>
+
+    </form>
+
+    <br>
+    <div class="loader" id="loader"></div>
+
+</div>
+
+</body>
+</html>
