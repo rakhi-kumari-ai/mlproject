@@ -1,57 +1,88 @@
-from flask import Flask, request, render_template, flash, redirect
+import streamlit as st
+import pandas as pd
 import os
-
 from src.pipeline.predict_pipeline import CustomData, PredictPipeline
 
-app = Flask(__name__)
-app.secret_key = "ml_project_secret_key"
+# ---------------- PAGE CONFIG ----------------
+st.set_page_config(
+    page_title="Student Score Predictor",
+    page_icon="🎓",
+    layout="centered"
+)
 
+# ---------------- CUSTOM CSS ----------------
+st.markdown("""
+<style>
+.main {
+    background-color: #f5f7fa;
+}
+.title {
+    text-align: center;
+    font-size: 40px;
+    font-weight: bold;
+    color: #2E86C1;
+}
+.card {
+    background-color: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0px 4px 20px rgba(0,0,0,0.1);
+}
+</style>
+""", unsafe_allow_html=True)
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+# ---------------- TITLE ----------------
+st.markdown('<div class="title">🎓 Student Performance Predictor</div>', unsafe_allow_html=True)
 
+st.write("")
 
-@app.route('/predict', methods=['POST'])
-def predict():
-    try:
-        gender = request.form.get('gender')
-        race = request.form.get('race_ethnicity')
-        education = request.form.get('parental_level_of_education')
-        lunch = request.form.get('lunch')
-        test_course = request.form.get('test_preparation_course')
-        reading_score = request.form.get('reading_score')
-        writing_score = request.form.get('writing_score')
+# ---------------- CARD START ----------------
+with st.container():
+    st.markdown('<div class="card">', unsafe_allow_html=True)
 
-        # Validation
-        if not all([gender, race, education, lunch, test_course, reading_score, writing_score]):
-            flash("⚠️ Please fill all fields correctly!")
-            return redirect('/')
+    st.subheader("Enter Student Details")
 
-        reading_score = int(reading_score)
-        writing_score = int(writing_score)
+    # -------- INPUT FIELDS --------
+    col1, col2 = st.columns(2)
 
-        data = CustomData(
-            gender=gender,
-            race_ethnicity=race,
-            parental_level_of_education=education,
-            lunch=lunch,
-            test_preparation_course=test_course,
-            reading_score=reading_score,
-            writing_score=writing_score
+    with col1:
+        gender = st.selectbox("Gender", ["male", "female"])
+        race_ethnicity = st.selectbox("Race/Ethnicity",
+                                     ["group A", "group B", "group C", "group D", "group E"])
+        parental_level_of_education = st.selectbox(
+            "Parental Education",
+            ["some high school", "high school", "some college", "associate's degree", "bachelor's degree", "master's degree"]
         )
 
-        pred_df = data.get_data_as_data_frame()
+    with col2:
+        lunch = st.selectbox("Lunch", ["standard", "free/reduced"])
+        test_preparation_course = st.selectbox("Test Prep Course", ["none", "completed"])
+        reading_score = st.number_input("Reading Score", min_value=0, max_value=100, value=50)
+        writing_score = st.number_input("Writing Score", min_value=0, max_value=100, value=50)
 
-        pipeline = PredictPipeline()
-        result = pipeline.predict(pred_df)
+    st.write("")
 
-        return render_template('home.html', results=round(result[0], 2))
+    # -------- BUTTON --------
+    if st.button("🔮 Predict Score"):
+        try:
+            data = CustomData(
+                gender=gender,
+                race_ethnicity=race_ethnicity,
+                parental_level_of_education=parental_level_of_education,
+                lunch=lunch,
+                test_preparation_course=test_preparation_course,
+                reading_score=reading_score,
+                writing_score=writing_score
+            )
 
-    except Exception as e:
-        flash(f"Error: {str(e)}")
-        return redirect('/')
+            pred_df = data.get_data_as_data_frame()
 
+            predict_pipeline = PredictPipeline()
+            result = predict_pipeline.predict(pred_df)
 
-if __name__ == "__main__":
-    app.run(debug=True)
+            st.success(f"🎯 Predicted Math Score: {round(result[0], 2)}")
+
+        except Exception as e:
+            st.error(f"Error: {e}")
+
+    st.markdown('</div>', unsafe_allow_html=True)
